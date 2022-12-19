@@ -1,4 +1,6 @@
 import datetime
+import traceback
+import logging
 import sys
 from tkinter.filedialog import askopenfilename
 
@@ -9,24 +11,34 @@ from ffmpeg_streaming import Formats, Bitrate, Representation, Size
 from configs import AWS_ACCESS_KEY_ID, REGION_NAME, BUCKET_NAME, AWS_SECRET_ACCESS_KEY
 from utils import CustomS3, get_dirname_from_url
 
-file_name = askopenfilename(initialdir="C:\\",
-                            filetypes=(
-                                ("Video files", ("*.mp4", "*.mkv", "*.mov", "*.wmv", "*.webm")),
-                            )
-                            )
-# while True:
-#     if check_file_mime_type(file_name) is False:
-#         file_name = askopenfilename(initialdir="C:\\")
-#     else:
-#         break
-# file_name = "/home/kairat/3333.mp4"
-upload_dir_path = get_dirname_from_url(input("Ctrl+V to paste from clipboard: "))
-# upload_dir_path = True, "movie"
-# while True:
-#     if upload_dir_path[0] is False:
-#         upload_dir_path = get_dirname_from_url(input("Re-paste working url: "))
-#     else:
-#         break
+print("Hello uploading platform\n"
+      "If you want get directory from UI then type: 1\n"
+      "If console only: 2\n"
+      )
+
+using_type = input("Type your type[1]: ")
+upload_dir_path = False, ""
+
+if using_type == "":
+    using_type = "1"
+
+if using_type == "1":
+    file_name = askopenfilename(initialdir="C:\\",
+                                filetypes=(
+                                    ("Video files", ("*.mp4", "*.mkv", "*.mov", "*.wmv", "*.webm")),
+                                )
+                                )
+elif using_type == "2":
+    file_name = input("Введите абсолютное расположение вашего файла: ")
+    upload_dir_path = True, input("Введите название папки на сервере: ")
+else:
+    raise SystemExit
+
+while True:
+    if upload_dir_path[0] is False:
+        upload_dir_path = get_dirname_from_url(input("Ctrl+V to paste from clipboard: "))
+    else:
+        break
 
 _360p = Representation(Size(640, 360), Bitrate(276 * 1024, 128 * 1024))
 _480p = Representation(Size(854, 480), Bitrate(750 * 1024, 192 * 1024))
@@ -88,8 +100,12 @@ def main():
     video = ffmpeg_streaming.input(file_name)
     hls = video.hls(Formats.h264())
     hls.representations(_360p, _480p)
-    hls.output(clouds=save_to_s3, monitor=monitor)
+    try:
+        hls.output("/home/kairat/test/playlist.m3u8", clouds=save_to_s3, monitor=monitor)
+    except Exception as e:
+        logging.error(e)
+        logging.error(traceback.format_exc())
 
 
-# if __name__ == '__main__':
-main()
+if __name__ == '__main__':
+    main()
