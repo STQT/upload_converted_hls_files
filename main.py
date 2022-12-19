@@ -2,7 +2,6 @@ import datetime
 import traceback
 import logging
 import sys
-from tkinter.filedialog import askopenfilename
 
 import ffmpeg_streaming
 from ffmpeg_streaming import CloudManager
@@ -23,6 +22,7 @@ if using_type == "":
     using_type = "1"
 
 if using_type == "1":
+    from tkinter.filedialog import askopenfilename
     file_name = askopenfilename(initialdir="C:\\",
                                 filetypes=(
                                     ("Video files", ("*.mp4", "*.mkv", "*.mov", "*.wmv", "*.webm")),
